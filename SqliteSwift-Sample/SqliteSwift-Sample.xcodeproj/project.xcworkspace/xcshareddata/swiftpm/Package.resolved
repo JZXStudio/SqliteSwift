@@ -1,0 +1,24 @@
+{
+  "originHash" : "24c42b54086284bfa059d873a3a3f8d618e2dc5dfba67d55fbef996599b1d902",
+  "pins" : [
+    {
+      "identity" : "sqlite.swift",
+      "kind" : "remoteSourceControl",
+      "location" : "https://githubfast.com/stephencelis/SQLite.swift.git",
+      "state" : {
+        "revision" : "a95fc6df17d108bd99210db5e8a9bac90fe984b8",
+        "version" : "0.15.3"
+      }
+    },
+    {
+      "identity" : "swipecellkit",
+      "kind" : "remoteSourceControl",
+      "location" : "https://githubfast.com/SwipeCellKit/SwipeCellKit.git",
+      "state" : {
+        "revision" : "7219cad3098637176ace311510d11467dbfb9bb0",
+        "version" : "2.7.1"
+      }
+    }
+  ],
+  "version" : 3
+}

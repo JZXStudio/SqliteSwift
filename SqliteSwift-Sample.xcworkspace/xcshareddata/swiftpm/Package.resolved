@@ -1,0 +1,42 @@
+{
+  "originHash" : "76c8d1bbd6c3f6b94da67324fcd032b9ca736ec60ed3070a088dbb1801e0d972",
+  "pins" : [
+    {
+      "identity" : "debugswift",
+      "kind" : "remoteSourceControl",
+      "location" : "https://githubfast.com/DebugSwift/DebugSwift.git",
+      "state" : {
+        "revision" : "4bb3daceccecefe77502cac2cd148643e7917466",
+        "version" : "0.4.0"
+      }
+    },
+    {
+      "identity" : "lifetimetracker",
+      "kind" : "remoteSourceControl",
+      "location" : "https://githubfast.com/krzysztofzablocki/LifetimeTracker",
+      "state" : {
+        "revision" : "fccc98aae719f6615d1f0cfd8f5e60f3888bdf62",
+        "version" : "1.8.4"
+      }
+    },
+    {
+      "identity" : "sqlite.swift",
+      "kind" : "remoteSourceControl",
+      "location" : "https://githubfast.com/stephencelis/SQLite.swift.git",
+      "state" : {
+        "revision" : "a95fc6df17d108bd99210db5e8a9bac90fe984b8",
+        "version" : "0.15.3"
+      }
+    },
+    {
+      "identity" : "swipecellkit",
+      "kind" : "remoteSourceControl",
+      "location" : "https://githubfast.com/SwipeCellKit/SwipeCellKit.git",
+      "state" : {
+        "revision" : "7219cad3098637176ace311510d11467dbfb9bb0",
+        "version" : "2.7.1"
+      }
+    }
+  ],
+  "version" : 3
+}
