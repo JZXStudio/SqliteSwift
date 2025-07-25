@@ -32,7 +32,7 @@
 		27D35AEE2DB8E52D00601AE7 /* ATools.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 27D35AEC2DB8E52D00601AE7 /* ATools.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		27D35AF02DB8E60800601AE7 /* Aquarius.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27D35AC42DB8E3DC00601AE7 /* Aquarius.framework */; };
 		27D35AF12DB8E60800601AE7 /* Aquarius.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 27D35AC42DB8E3DC00601AE7 /* Aquarius.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
-		27D35AF52DB9039800601AE7 /* ASwipeCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27D35AF42DB9039800601AE7 /* ASwipeCell.swift */; };
+		27D35AF52DB9039800601AE7 /* ASwipeCell 2.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27D35AF42DB9039800601AE7 /* ASwipeCell 2.swift */; };
 		27D35AF82DB904FE00601AE7 /* SwipeCellKit in Frameworks */ = {isa = PBXBuildFile; productRef = 27D35AF72DB904FE00601AE7 /* SwipeCellKit */; };
 		27D35AFA2DB908CB00601AE7 /* BindParameters.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27D35AF92DB908CB00601AE7 /* BindParameters.swift */; };
 /* End PBXBuildFile section */
@@ -95,7 +95,7 @@
 		27D35AD52DB8E42900601AE7 /* TagTable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TagTable.swift; sourceTree = "<group>"; };
 		27D35AD62DB8E42900601AE7 /* TagTableInfo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TagTableInfo.swift; sourceTree = "<group>"; };
 		27D35AEC2DB8E52D00601AE7 /* ATools.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = ATools.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		27D35AF42DB9039800601AE7 /* ASwipeCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ASwipeCell.swift; sourceTree = "<group>"; };
+		27D35AF42DB9039800601AE7 /* ASwipeCell 2.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ASwipeCell 2.swift"; sourceTree = "<group>"; };
 		27D35AF92DB908CB00601AE7 /* BindParameters.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BindParameters.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -169,6 +169,7 @@
 			children = (
 				27D35ACD2DB8E42900601AE7 /* Store */,
 				27D35AC72DB8E42900601AE7 /* DatabaseInfo.swift */,
+				27D35AF42DB9039800601AE7 /* ASwipeCell 2.swift */,
 				27D35ACE2DB8E42900601AE7 /* StoreCell.swift */,
 				27D35ACF2DB8E42900601AE7 /* StoreVC.swift */,
 				27D35AD02DB8E42900601AE7 /* StoreView.swift */,
@@ -199,7 +200,6 @@
 		27D35ACD2DB8E42900601AE7 /* Store */ = {
 			isa = PBXGroup;
 			children = (
-				27D35AF42DB9039800601AE7 /* ASwipeCell.swift */,
 				27D35AC82DB8E42900601AE7 /* SqliteSwift.swift */,
 				27D35AC92DB8E42900601AE7 /* SqliteSwiftModelBase.swift */,
 				27D35ACA2DB8E42900601AE7 /* SqliteSwiftModelProtocol.swift */,
@@ -385,7 +385,7 @@
 				27D35AE32DB8E42900601AE7 /* StoreCell.swift in Sources */,
 				27D35AE42DB8E42900601AE7 /* SqliteSwift.swift in Sources */,
 				27D35AE52DB8E42900601AE7 /* TagService.swift in Sources */,
-				27D35AF52DB9039800601AE7 /* ASwipeCell.swift in Sources */,
+				27D35AF52DB9039800601AE7 /* ASwipeCell 2.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

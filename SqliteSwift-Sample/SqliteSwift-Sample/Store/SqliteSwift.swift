@@ -6,7 +6,6 @@
 //
 
 import SQLite
-import Foundation
 
 public enum SqliteSwiftOrderType {
     case DESC
@@ -35,8 +34,12 @@ public typealias ExpressionAny_ = SQLite.Expression<Any?>
 open class SqliteSwift: NSObject {
     private var dbName: String
     private var db: Connection?
-    private var table: Table
-    private var tableModel: Any
+    
+    //private var table: Table
+    //private var tableModel: Any
+    
+    private var tables: [Table] = []
+    private var tableModels: [Any] = []
     
     static let kPrimaryKey: String = "primaryKey"
     static let kUnique: String = "unique"
@@ -49,18 +52,36 @@ open class SqliteSwift: NSObject {
     
     public init(dbName: String, model: Any) {
         self.dbName = dbName
-        self.tableModel = model
-        
-        let path = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true)[0]
-        db = try? Connection("\(path)/\(dbName).sqlite3")
-        let p_class: SqliteSwiftTableProtocol = tableModel as! SqliteSwiftTableProtocol
-        table = Table(p_class.tableName)
+        self.tableModels.append(model)
         
         super.init()
         
-        let mirror = Mirror(reflecting: model.self)
+        let path = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true)[0]
+        db = try? Connection("\(path)/\(dbName).sqlite3")
+        let p_class: SqliteSwiftTableProtocol = tableModels[0] as! SqliteSwiftTableProtocol
+        tables.append(Table(p_class.tableName))
+        createTable(tables[0], model, p_class)
+    }
+    
+    public init(dbName: String, models: Any...) {
+        self.dbName = dbName
+        self.tableModels = models
         
-        //let propertys: Array<String> = mirror.children.compactMap { $0.label }
+        super.init()
+        
+        let path = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true)[0]
+        db = try? Connection("\(path)/\(dbName).sqlite3")
+        
+        for currentModel: Any in models {
+            let p_class: SqliteSwiftTableProtocol = currentModel as! SqliteSwiftTableProtocol
+            let currentTable: Table = Table(p_class.tableName)
+            tables.append(currentTable)
+            createTable(currentTable, currentModel, p_class)
+        }
+    }
+    
+    private func createTable(_ table: Table, _ model: Any, _ p_class: SqliteSwiftTableProtocol) {
+        let mirror = Mirror(reflecting: model.self)
         
         try! db?.run(table.create(ifNotExists: true, block: { (table) in
             let primaryKeyMirror = Mirror(reflecting: p_class.primaryKey.self)
@@ -276,57 +297,123 @@ open class SqliteSwift: NSObject {
     }
     
     public func selectAll() -> Array<Dictionary<String, Any>> {
-        let query = table
+        let query = tables[0]
         
         return selectResult(query)
     }
     
     public func selectAll(order: ExpressionAny, type: SqliteSwiftOrderType = .DESC) -> Array<Dictionary<String, Any>> {
-        let query = type == .DESC ? table.order(order.desc) : table.order(order.asc)
+        let query = type == .DESC ? tables[0].order(order.desc) : tables[0].order(order.asc)
         
         return selectResult(query)
     }
     
     public func selectAllLimit(limit: Int, offset: Int = 0) -> Array<Dictionary<String, Any>> {
-        let query = table.limit(limit, offset: offset)
+        let query = tables[0].limit(limit, offset: offset)
         
         return selectResult(query)
     }
     
     public func selectAllLimit(limit: Int, offset: Int = 0, order: ExpressionAny, type: SqliteSwiftOrderType = .DESC) -> Array<Dictionary<String, Any>> {
-        let query = type == .DESC ? table.limit(limit, offset: offset).order(order.desc) : table.limit(limit, offset: offset).order(order.asc)
+        let query = type == .DESC ? tables[0].limit(limit, offset: offset).order(order.desc) : tables[0].limit(limit, offset: offset).order(order.asc)
         
         return selectResult(query)
     }
     
     public func select(condition: ExpressionBool) -> Array<Dictionary<String, Any>> {
-        let query = table.filter(condition)
+        let query = tables[0].filter(condition)
         
         return selectResult(query)
     }
     
+    public func selectMuti(_ joinQuery: ExpressionBool, tableModels: [Any]) -> [[String : Any]] {
+        let query = tables[0]
+            .join(
+                tables[1],
+                on: (joinQuery)
+            )
+        return selectMutiResult(query, tableModels: tableModels)
+    }
+    
+    public func selectMuti(_ joinQuery: ExpressionBool, condition: ExpressionBool, tableModels: [Any]) -> [[String : Any]] {
+        let query = tables[0]
+            .join(
+                tables[1],
+                on: (joinQuery)
+            )
+            .filter(condition)
+        return selectMutiResult(query, tableModels: tableModels)
+    }
+    
+    public func selectMuti(_ joinQuery: ExpressionBool, order: ExpressionAny, type: SqliteSwiftOrderType = .DESC, tableModels: [Any]) -> [[String : Any]] {
+        let query = tables[0]
+            .join(
+                tables[1],
+                on: (joinQuery)
+            )
+            .order((type == .DESC) ? order.desc : order.asc)
+        return selectMutiResult(query, tableModels: tableModels)
+    }
+    
+    public func selectMuti(_ joinQuery: ExpressionBool, condition: ExpressionBool, order: ExpressionAny, type: SqliteSwiftOrderType = .DESC, tableModels: [Any]) -> [[String : Any]] {
+        let query = tables[0]
+            .join(
+                tables[1],
+                on: (joinQuery)
+            )
+            .filter(condition)
+            .order((type == .DESC) ? order.desc : order.asc)
+        return selectMutiResult(query, tableModels: tableModels)
+    }
+    
     public func select(condition: ExpressionBool, limit: Int, offset: Int = 0) -> Array<Dictionary<String, Any>>  {
-        let query = table.filter(condition).limit(limit, offset: offset)
+        let query = tables[0].filter(condition).limit(limit, offset: offset)
         
         return selectResult(query)
     }
     
     public func select(condition: ExpressionBool, limit: Int, offset: Int = 0, order: ExpressionAny, type: SqliteSwiftOrderType = .DESC) -> Array<Dictionary<String, Any>>  {
-        let query = type == .DESC ? table.filter(condition).limit(limit, offset: offset).order(order.desc) : table.filter(condition).limit(limit, offset: offset).order(order.asc)
+        let query = type == .DESC ? tables[0].filter(condition).limit(limit, offset: offset).order(order.desc) : tables[0].filter(condition).limit(limit, offset: offset).order(order.asc)
         
         return selectResult(query)
     }
     
-    private func selectResult(_ query: QueryType) -> Array<Dictionary<String, Any>> {
+    private func selectMutiResult(_ query: QueryType, tableModels: [Any]) -> [[String : Any]] {
+        var results: [[String : Any]] = []
+        for currentTableModel in tableModels {
+            if results.count == 0 {
+                results = selectResult(query, isHaveID: false, tableModel: currentTableModel)
+            } else {
+                let tempResults: [[String : Any]] = selectResult(query, isHaveID: false, tableModel: currentTableModel)
+                for tempDict: [String : Any] in tempResults {
+                    var i: Int = 0
+                    while i<tempDict.count {
+                        results[0][tempDict.getStringKey(i)] = tempDict.getValue(i)
+                        i = i + 1
+                    }
+                }
+            }
+        }
+        return results
+    }
+    
+    private func selectResult(_ query: QueryType, isHaveID: Bool=true, tableModel: Any?=nil) -> Array<Dictionary<String, Any>> {
         var result: Array<Dictionary<String, Any>> = Array()
         //查询
         for tableData in (try! db?.prepare(query))! {
             var dict: Dictionary<String, Any> = [:]
-            
-            let mirror = Mirror(reflecting: tableModel.self)
+            //tableModels[0].self
+            var model = tableModels[0].self
+            if tableModel != nil {
+                model = tableModel!
+            }
+            let mirror = Mirror(reflecting: model)
             for child in mirror.children {
                 let childLabel: String = child.label.unsafelyUnwrapped
                 if childLabel == SqliteSwift.kPrimaryKey || childLabel == SqliteSwift.kUnique || childLabel == SqliteSwift.kTableName || childLabel == SqliteSwift.kTableModel {
+                    continue
+                }
+                if childLabel == "id" && !isHaveID {
                     continue
                 }
                 let mirror2 = Mirror(reflecting: child.value)
@@ -368,18 +455,36 @@ open class SqliteSwift: NSObject {
     }
     
     public func selectCount() -> Int {
-        return (try! db?.scalar(table.count))!
+        return (try! db?.scalar(tables[0].count))!
     }
     
     public func selectCount(condition: ExpressionBool) -> Int {
-        return (try! db?.scalar(table.count.filter(condition)))!
+        return (try! db?.scalar(tables[0].count.filter(condition)))!
     }
     
     @discardableResult
     public func insert(model: Any) -> Int? {
         let insertSetters: Array<Setter> = assembleSetters(model: model)
         
-        let insert = table.insertMany([insertSetters])
+        let insert = tables[0].insertMany([insertSetters])
+        let rowid = Int(try! (db?.run(insert))!)
+        
+        return rowid
+    }
+    
+    @discardableResult
+    public func insert(model: Any, tableModel: Any) -> Int? {
+        let insertSetters: Array<Setter> = assembleSetters(model: model, tableModel: tableModel)
+        
+        var i: Int = 0
+        for currentTableModel in tableModels {
+            if (currentTableModel as AnyObject).isEqual(tableModel) {
+                break
+            }
+            i = i + 1
+        }
+        
+        let insert = tables[i].insertMany([insertSetters])
         let rowid = Int(try! (db?.run(insert))!)
         
         return rowid
@@ -389,7 +494,25 @@ open class SqliteSwift: NSObject {
     public func update(model:Any, condition: ExpressionBool) -> Int? {
         let updateSetters: Array<Setter> = assembleSetters(model: model)
         
-        let update = table.filter(condition)
+        let update = tables[0].filter(condition)
+        let rowid = try! db?.run(update.update(updateSetters))
+        
+        return rowid
+    }
+    
+    @discardableResult
+    public func update(model:Any, condition: ExpressionBool, tableModel: Any) -> Int? {
+        let updateSetters: Array<Setter> = assembleSetters(model: model, tableModel: tableModel)
+        
+        var i: Int = 0
+        for currentTableModel in tableModels {
+            if (currentTableModel as AnyObject).isEqual(tableModel) {
+                break
+            }
+            i = i + 1
+        }
+        
+        let update = tables[i].filter(condition)
         let rowid = try! db?.run(update.update(updateSetters))
         
         return rowid
@@ -398,16 +521,102 @@ open class SqliteSwift: NSObject {
     @discardableResult
     public func delete(condition: ExpressionBool) -> Int? {
         //删除
-        let rowid = try! db?.run(self.table.filter(condition).delete())
+        let rowid = try! db?.run(self.tables[0].filter(condition).delete())
         
         return rowid
+    }
+    
+    public func getDBVersion() -> Int32 {
+        return db?.userVersion ?? -1
+    }
+    
+    public func setDBVersion(_ version: Int32) {
+        db?.userVersion = version
+    }
+    /// 增加字段
+    /// - Parameter column: 字段名称
+    /// - Parameter defaultValue: 默认值
+    /// - Returns: 是否添加成功
+    ///
+    /// **Note：默认值是必须填写的，会根据默认值来判断字段的类型**
+    public func addColumn(_ column: String, defaultValue: Any) -> Bool {
+        var action: String = ""
+        
+        if defaultValue is Int {
+            let columnExpression = Expression<Int>(column)
+            action = tables[0].addColumn(columnExpression, defaultValue: defaultValue as! Int)
+        } else if defaultValue is Int? {
+            let columnExpression = Expression<Int?>(column)
+            action = tables[0].addColumn(columnExpression, defaultValue: defaultValue as? Int)
+        } else if defaultValue is Int64 {
+            let columnExpression = Expression<Int64>(column)
+            action = tables[0].addColumn(columnExpression, defaultValue: defaultValue as! Int64)
+        } else if defaultValue is Int? {
+            let columnExpression = Expression<Int64?>(column)
+            action = tables[0].addColumn(columnExpression, defaultValue: defaultValue as? Int64)
+        } else if defaultValue is String {
+            let columnExpression = Expression<String>(column)
+            action = tables[0].addColumn(columnExpression, defaultValue: defaultValue as! String)
+        } else if defaultValue is String? {
+            let columnExpression = Expression<String?>(column)
+            action = tables[0].addColumn(columnExpression, defaultValue: defaultValue as? String)
+        } else if defaultValue is Bool {
+            let columnExpression = Expression<Bool>(column)
+            action = tables[0].addColumn(columnExpression, defaultValue: defaultValue as! Bool)
+        } else if defaultValue is Bool? {
+            let columnExpression = Expression<Bool?>(column)
+            action = tables[0].addColumn(columnExpression, defaultValue: defaultValue as? Bool)
+        } else if defaultValue is Double {
+            let columnExpression = Expression<Double>(column)
+            action = tables[0].addColumn(columnExpression, defaultValue: defaultValue as! Double)
+        } else if defaultValue is Double? {
+            let columnExpression = Expression<Double?>(column)
+            action = tables[0].addColumn(columnExpression, defaultValue: defaultValue as? Double)
+        } else if defaultValue is Data {
+            let columnExpression = Expression<Data>(column)
+            action = tables[0].addColumn(columnExpression, defaultValue: defaultValue as! Data)
+        } else if defaultValue is Data? {
+            let columnExpression = Expression<Data?>(column)
+            action = tables[0].addColumn(columnExpression, defaultValue: defaultValue as? Data)
+        } else if defaultValue is Date {
+            let columnExpression = Expression<Date>(column)
+            action = tables[0].addColumn(columnExpression, defaultValue: defaultValue as! Date)
+        } else if defaultValue is Date? {
+            let columnExpression = Expression<Date?>(column)
+            action = tables[0].addColumn(columnExpression, defaultValue: defaultValue as? Date)
+        }
+        
+        var result: Bool = false
+        do {
+            try db?.run(action)
+            result = true
+        } catch {
+            
+        }
+        
+        return result
+    }
+    
+    public func isExistColumn(columnName: String) -> Bool {
+        do {
+            var columnDatas: [String] = []
+            let p_class: SqliteSwiftTableProtocol = tableModels[0] as! SqliteSwiftTableProtocol
+            let s = try db?.prepare("PRAGMA table_info(" + p_class.tableName + ")")
+            for row in s! { columnDatas.append(row[1]! as! String) }
+                let list = columnDatas.filter { (item) -> Bool in
+                    return item == columnName
+            }
+            return list.count > 0
+        } catch {
+            return false
+        }
     }
     //MARK: 闭包函数
     @discardableResult
     public func insert(model: Any, completion:@escaping ((_ success : Bool) -> Void)) -> Self {
         let insertSetters: Array<Setter> = assembleSetters(model: model)
         
-        let insert = table.insertMany([insertSetters])
+        let insert = tables[0].insertMany([insertSetters])
         
         do {
             try db?.run(insert)
@@ -422,7 +631,7 @@ open class SqliteSwift: NSObject {
     public func update(model:Any, condition: ExpressionBool, completion:@escaping ((_ success : Bool) -> Void)) -> Self {
         let updateSetters: Array<Setter> = assembleSetters(model: model)
         
-        let update = table.filter(condition)
+        let update = tables[0].filter(condition)
         
         do {
             try db?.run(update.update(updateSetters))
@@ -437,7 +646,7 @@ open class SqliteSwift: NSObject {
     public func delete(condition: ExpressionBool, completion:@escaping ((_ success : Bool) -> Void)) -> Self {
         //删除
         do {
-            try db?.run(table.filter(condition).delete())
+            try db?.run(tables[0].filter(condition).delete())
             completion(true)
         } catch {
             completion(false)
@@ -445,8 +654,35 @@ open class SqliteSwift: NSObject {
         
         return self
     }
+    @discardableResult
+    public func commit(_ completion:@escaping (() -> Void)) -> Self {
+        db?.commitHook {
+            completion()
+        }
+        
+        return self
+    }
+    @discardableResult
+    public func update(_ completion:@escaping (() -> Void)) -> Self {
+        db?.updateHook { operation, db, table, rowid in
+            completion()
+        }
+        
+        return self
+    }
     
-    private func assembleSetters(model: Any) -> Array<Setter> {
+    private func assembleSetters(model: Any, tableModel: Any?=nil) -> Array<Setter> {
+        var index: Int = 0
+        
+        if tableModel != nil {
+            for currentTableModel: Any in tableModels {
+                if (currentTableModel as AnyObject).isEqual(tableModel) {
+                    break
+                }
+                index = index + 1
+            }
+        }
+        
         var setters: Array<Setter> = Array()
         let mirror = Mirror(reflecting: model.self)
         for child in mirror.children {
@@ -463,7 +699,7 @@ open class SqliteSwift: NSObject {
             if isDBName || childLabel == SqliteSwift.kTableName || childLabel == SqliteSwift.kPrimaryKey || childLabel == SqliteSwift.kUnique || childLabel == SqliteSwift.kTableModel {
                 continue
             }
-            let modelTemp: Any = getModelMirrorValue(model: tableModel, key: childLabel)!
+            let modelTemp: Any = getModelMirrorValue(model: tableModels[index], key: childLabel)!
             let mirror2 = Mirror(reflecting: modelTemp.self)
             if mirror2.subjectType == ExpressionInt.self {
                 setters.append(modelTemp as! SQLite.Expression<Int> <- child.value as! Int)
